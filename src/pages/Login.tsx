@@ -17,7 +17,7 @@ export default function Login() {
     const { error: authError } = await supabase.auth.signInWithPassword({ email, password })
     setLoading(false)
     if (authError) {
-      setError('Those credentials didn't work. Double-check your email and password.')
+      setError("Those credentials didn't work. Double-check your email and password.")
     } else {
       navigate('/dashboard')
     }
