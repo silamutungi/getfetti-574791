@@ -1,3 +1,117 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ─── Design System ─────────────────────────────────────── */
+
+:root {
+  --shadow-sm: 0 1px 3px rgba(26,20,16,0.07), 0 1px 2px rgba(26,20,16,0.04);
+  --shadow-md: 0 4px 16px rgba(26,20,16,0.09), 0 2px 4px rgba(26,20,16,0.05);
+  --shadow-lg: 0 12px 40px rgba(26,20,16,0.11), 0 4px 8px rgba(26,20,16,0.07);
+  --glow-acid: 0 0 0 3px rgba(200,240,96,0.35);
+}
+
+/* ─── Base ─────────────────────────────────────────────── */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+
+body {
+  background: #fdf8f0;
+  color: #1a1410;
+  font-family: 'DM Mono', 'Courier New', monospace;
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ─── Keyframes ─────────────────────────────────────────── */
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes pop {
+  0%   { transform: scale(0.82); opacity: 0; }
+  65%  { transform: scale(1.04); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -800px 0; }
+  100% { background-position: 800px 0; }
+}
+
+@keyframes confettiFall {
+  0%   { transform: translateY(-30px) translateX(0) rotate(0deg);       opacity: 1; }
+  80%  { opacity: 1; }
+  100% { transform: translateY(105vh) translateX(var(--drift, 40px)) rotate(600deg); opacity: 0; }
+}
+
+@keyframes heartbeat {
+  0%, 100% { transform: scale(1); }
+  30%       { transform: scale(1.15); }
+  60%       { transform: scale(1.05); }
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* ─── Animation utilities ───────────────────────────────── */
+
+.animate-fade-up   { animation: fadeUp    0.38s ease both; }
+.animate-fade-in   { animation: fadeIn    0.22s ease both; }
+.animate-pop       { animation: pop       0.3s  ease both; }
+.animate-slide-dn  { animation: slideDown 0.22s ease both; }
+.animate-spin-sm   { animation: spin      0.75s linear infinite; }
+.animate-heartbeat { animation: heartbeat 0.65s ease; }
+
+.delay-50  { animation-delay:  50ms; }
+.delay-100 { animation-delay: 100ms; }
+.delay-150 { animation-delay: 150ms; }
+.delay-200 { animation-delay: 200ms; }
+.delay-300 { animation-delay: 300ms; }
+.delay-400 { animation-delay: 400ms; }
+.delay-500 { animation-delay: 500ms; }
+.delay-700 { animation-delay: 700ms; }
+
+/* ─── Skeleton loader ───────────────────────────────────── */
+
+.skeleton {
+  background: linear-gradient(90deg, #f0ebe0 0%, #e8e2d5 45%, #f0ebe0 100%);
+  background-size: 1600px 100%;
+  animation: shimmer 1.7s infinite linear;
+  border-radius: 10px;
+}
+
+/* ─── Focus & selection ─────────────────────────────────── */
+
+:focus-visible {
+  outline: 2px solid #8ab800;
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+::selection { background: rgba(200,240,96,0.45); color: #1a1410; }
+
+/* ─── Scrollbar ─────────────────────────────────────────── */
+
+::-webkit-scrollbar             { width: 5px; height: 5px; }
+::-webkit-scrollbar-track       { background: transparent; }
+::-webkit-scrollbar-thumb       { background: #e0dbd0; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #8a8278; }

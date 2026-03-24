@@ -1,98 +1,250 @@
 import { Link } from 'react-router-dom'
+import { useEffect, useRef, useState, type RefObject } from 'react'
+
+function useInView(threshold = 0.12): { ref: RefObject<HTMLDivElement>; visible: boolean } {
+  const ref = useRef<HTMLDivElement>(null)
+  const [visible, setVisible] = useState(false)
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const obs = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) { setVisible(true); obs.disconnect() } },
+      { threshold }
+    )
+    obs.observe(el)
+    return () => obs.disconnect()
+  }, [threshold])
+  return { ref, visible }
+}
 
 const features = [
   {
-    icon: '📋',
+    emoji: '📋',
+    tag: 'For the host',
+    tagColor: 'bg-primary/25 text-primary-dark',
     title: 'Host Brief',
-    body: 'A calm, prioritized view: likely attendance, unresolved maybes, and the three things you actually need to handle today.'
+    hook: 'Know before you shop.',
+    body: "One calm view: who is definitely coming, who is probably coming, and who needs a gentle nudge. No spreadsheet required.",
   },
   {
-    icon: '🤔',
+    emoji: '🤔',
+    tag: 'Fewer follow-ups',
+    tagColor: 'bg-coral/20 text-coral',
     title: 'Better Maybe',
-    body: 'Guests who pick Maybe choose a real reason — schedule conflict, waiting on a plus-one, arriving late, need more info. You get signal, not silence.'
+    hook: 'A maybe with context.',
+    body: "Guests who pick Maybe choose a real reason — schedule conflict, waiting on a plus-one, arriving late, need more info. You always know where you stand.",
   },
   {
-    icon: '🎭',
+    emoji: '✨',
+    tag: 'Guest experience',
+    tagColor: 'bg-ink/8 text-ink',
     title: 'Dual View',
-    body: 'One invite, two modes. Vibe View for your close friends. Simple View for family and coworkers. Same event, right tone for everyone.'
+    hook: 'Beautiful for every crowd.',
+    body: "Toggle between Vibe View (dark, editorial) and Simple View (light, clean). Same event, right tone for everyone.",
   },
-  {
-    icon: '✨',
-    title: 'Smart Themes',
-    body: 'Getfetti prompts dietary questions for dinners, weather backup for rooftops, and registry links for housewarmings — automatically.'
-  }
 ]
 
 const steps = [
-  { n: '01', text: 'Create your event — title, date, location, vibe.' },
-  { n: '02', text: 'Share the link. Guests RSVP in seconds, no app needed.' },
-  { n: '03', text: 'Your Host Brief shows you exactly who is coming and what needs attention.' }
+  { n: '01', title: 'Create your event', body: 'Add the details. Getfetti builds a beautiful invite page instantly.' },
+  { n: '02', title: 'Share the link', body: 'One link, zero friction. Guests RSVP in under 30 seconds — no account needed.' },
+  { n: '03', title: 'Host with clarity', body: 'Your Host Brief shows who is coming, who might come, and who needs a nudge.' },
 ]
 
 export default function Home() {
+  const hero   = useInView(0.05)
+  const feats  = useInView()
+  const how    = useInView()
+  const cta    = useInView()
+
   return (
     <div className="bg-paper">
-      <section className="max-w-5xl mx-auto px-6 pt-20 pb-24 text-center">
-        <span className="inline-block bg-primary text-ink text-xs font-mono font-medium px-4 py-1 rounded-full mb-6">Now in early access</span>
-        <h1 className="font-serif text-5xl md:text-7xl font-extrabold text-ink leading-tight mb-6">
-          The invite that<br className="hidden md:block" /> helps you host.
-        </h1>
-        <p className="text-dim font-mono text-lg md:text-xl max-w-2xl mx-auto mb-10">
-          Beautiful invites for birthdays, dinners, and gatherings — with guest clarity that actually helps you plan.
-        </p>
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Link
-            to="/signup"
-            className="bg-primary text-ink font-mono font-medium px-8 py-4 rounded-full hover:bg-primary-dark transition-colors min-h-[44px] flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-primary-dark"
-          >
-            Host your first event — free
-          </Link>
-          <Link
-            to="/login"
-            className="border-2 border-primary-dark text-primary-dark font-mono font-medium px-8 py-4 rounded-full hover:bg-ink hover:text-primary transition-colors min-h-[44px] flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-primary-dark"
-          >
-            Log in
-          </Link>
-        </div>
-      </section>
 
-      <section className="bg-ink py-20 px-6" aria-labelledby="features-heading">
+      {/* ── Hero ──────────────────────────────────────────────── */}
+      <div
+        ref={hero.ref}
+        className="max-w-5xl mx-auto px-6 pt-20 pb-24 md:pt-28 md:pb-32"
+      >
+        <div
+          className="transition-all duration-700 ease-out"
+          style={{ opacity: hero.visible ? 1 : 0, transform: hero.visible ? 'none' : 'translateY(28px)' }}
+        >
+          {/* Label */}
+          <span className="inline-flex items-center gap-2 text-xs font-mono tracking-widest uppercase text-dim border border-border rounded-full px-4 py-1.5 mb-8">
+            <span className="w-1.5 h-1.5 rounded-full bg-primary inline-block" />
+            Now in early access
+          </span>
+
+          {/* Headline */}
+          <h1
+            className="font-serif font-extrabold text-ink leading-none tracking-tight mb-6"
+            style={{ fontSize: 'clamp(2.8rem, 8vw, 5.5rem)', letterSpacing: '-0.025em', lineHeight: 1.05 }}
+          >
+            The invite app<br />
+            that actually<br />
+            <em className="not-italic text-primary-dark">helps you host.</em>
+          </h1>
+
+          <p className="font-mono text-lg md:text-xl text-dim max-w-xl leading-relaxed mb-10">
+            Beautiful invites for birthdays, dinners, and gatherings —
+            with guest clarity that actually helps you plan.
+          </p>
+
+          {/* CTAs */}
+          <div className="flex flex-col xs:flex-row gap-4 mb-14">
+            <Link
+              to="/signup"
+              className="inline-flex items-center justify-center gap-2 bg-primary text-ink font-mono font-semibold text-base px-8 py-4 rounded-full hover:bg-primary-dark hover:text-white transition-all duration-200 min-h-[52px] shadow-sm hover:shadow-md active:scale-[0.97]"
+            >
+              Host your first event — free
+              <span aria-hidden="true">→</span>
+            </Link>
+            <Link
+              to="/login"
+              className="inline-flex items-center justify-center bg-transparent text-ink font-mono text-base px-8 py-4 rounded-full border border-border hover:border-ink transition-all duration-200 min-h-[52px] active:scale-[0.97]"
+            >
+              Log in
+            </Link>
+          </div>
+
+          {/* Trust line */}
+          <p className="font-mono text-sm text-dim">
+            Free to get started &middot; No credit card needed
+          </p>
+        </div>
+      </div>
+
+      {/* ── Features ──────────────────────────────────────────── */}
+      <div
+        ref={feats.ref}
+        className="px-6 py-16 md:py-24"
+      >
         <div className="max-w-5xl mx-auto">
-          <h2 id="features-heading" className="font-serif text-4xl font-bold text-paper text-center mb-14">Designed for calmer hosting</h2>
-          <div className="grid md:grid-cols-2 gap-8">
-            {features.map(f => (
-              <div key={f.title} className="bg-paper/10 rounded-2xl p-8 border border-paper/10">
-                <span className="text-3xl block mb-4" aria-hidden="true">{f.icon}</span>
-                <h3 className="font-serif text-xl font-bold text-paper mb-3">{f.title}</h3>
+          <p
+            className="font-mono text-xs tracking-widest uppercase text-dim mb-10 transition-all duration-700"
+            style={{ opacity: feats.visible ? 1 : 0, transform: feats.visible ? 'none' : 'translateY(16px)' }}
+          >
+            What makes Getfetti different
+          </p>
+          <div className="grid md:grid-cols-3 gap-6">
+            {features.map((f, i) => (
+              <div
+                key={f.title}
+                className="group bg-surface rounded-3xl p-8 border border-border/60 hover:shadow-md hover:border-border transition-all duration-300"
+                style={{
+                  opacity:   feats.visible ? 1 : 0,
+                  transform: feats.visible ? 'none' : 'translateY(24px)',
+                  transition: `opacity 0.5s ease ${i * 90}ms, transform 0.5s ease ${i * 90}ms, box-shadow 0.3s ease, border-color 0.3s ease`,
+                }}
+              >
+                <div className="text-4xl mb-5 group-hover:animate-heartbeat">{f.emoji}</div>
+                <span className={`inline-block font-mono text-xs px-3 py-1 rounded-full mb-4 ${f.tagColor}`}>
+                  {f.tag}
+                </span>
+                <h3 className="font-serif text-2xl font-bold text-ink mb-1">{f.title}</h3>
+                <p className="font-mono text-sm font-medium text-ink mb-3">{f.hook}</p>
                 <p className="font-mono text-sm text-dim leading-relaxed">{f.body}</p>
               </div>
             ))}
           </div>
         </div>
-      </section>
+      </div>
 
-      <section className="py-20 px-6 max-w-4xl mx-auto" aria-labelledby="how-heading">
-        <h2 id="how-heading" className="font-serif text-4xl font-bold text-ink text-center mb-14">Up in three steps</h2>
-        <div className="flex flex-col gap-8">
-          {steps.map(s => (
-            <div key={s.n} className="flex gap-6 items-start">
-              <span className="font-serif text-5xl font-extrabold text-primary leading-none flex-shrink-0">{s.n}</span>
-              <p className="font-mono text-ink text-lg leading-relaxed pt-2">{s.text}</p>
+      {/* ── How it works — dark section ─────────────────────── */}
+      <div
+        ref={how.ref}
+        className="bg-ink py-20 md:py-28 px-6"
+      >
+        <div className="max-w-5xl mx-auto">
+          <div
+            style={{
+              opacity: how.visible ? 1 : 0,
+              transform: how.visible ? 'none' : 'translateY(24px)',
+              transition: 'opacity 0.6s ease, transform 0.6s ease',
+            }}
+          >
+            <p className="font-mono text-xs tracking-widest uppercase text-dim mb-4">
+              How it works
+            </p>
+            <h2
+              className="font-serif font-bold text-paper mb-16 leading-tight"
+              style={{ fontSize: 'clamp(2rem, 5vw, 3.2rem)', letterSpacing: '-0.02em' }}
+            >
+              From idea to invites
+              <br />
+              in under two minutes.
+            </h2>
+
+            <div className="grid md:grid-cols-3 gap-10">
+              {steps.map((step, i) => (
+                <div
+                  key={step.n}
+                  className="flex gap-5"
+                  style={{
+                    opacity: how.visible ? 1 : 0,
+                    transform: how.visible ? 'none' : 'translateY(20px)',
+                    transition: `opacity 0.5s ease ${i * 100 + 200}ms, transform 0.5s ease ${i * 100 + 200}ms`,
+                  }}
+                >
+                  <span
+                    className="font-serif font-extrabold text-dim/30 leading-none flex-shrink-0 select-none"
+                    style={{ fontSize: '3.5rem' }}
+                  >
+                    {step.n}
+                  </span>
+                  <div className="pt-1">
+                    <h3 className="font-mono font-semibold text-paper mb-2">{step.title}</h3>
+                    <p className="font-mono text-sm text-dim leading-relaxed">{step.body}</p>
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}
+          </div>
         </div>
-      </section>
+      </div>
 
-      <section className="bg-ink py-20 px-6 text-center">
-        <h2 className="font-serif text-4xl md:text-5xl font-extrabold text-paper mb-6">Your guests deserve a great invite.</h2>
-        <p className="text-dim font-mono text-lg mb-10 max-w-xl mx-auto">You deserve to know who's actually coming.</p>
-        <Link
-          to="/signup"
-          className="bg-primary text-ink font-mono font-medium px-10 py-4 rounded-full hover:bg-primary-dark transition-colors min-h-[44px] inline-flex items-center focus:outline-none focus:ring-2 focus:ring-primary-dark"
+      {/* ── CTA ───────────────────────────────────────────────── */}
+      <div
+        ref={cta.ref}
+        className="px-6 py-24 md:py-32 text-center"
+      >
+        <div
+          className="max-w-xl mx-auto"
+          style={{
+            opacity: cta.visible ? 1 : 0,
+            transform: cta.visible ? 'none' : 'translateY(24px)',
+            transition: 'opacity 0.6s ease, transform 0.6s ease',
+          }}
         >
-          Create your first event
-        </Link>
-      </section>
+          <div
+            className="font-sans mb-6 select-none"
+            style={{ fontSize: '3.5rem', lineHeight: 1 }}
+            aria-hidden="true"
+          >
+            🎉
+          </div>
+          <h2
+            className="font-serif font-bold text-ink mb-5 leading-tight"
+            style={{ fontSize: 'clamp(2rem, 5vw, 3.2rem)', letterSpacing: '-0.02em' }}
+          >
+            Your next event
+            <br />
+            deserves better.
+          </h2>
+          <p className="font-mono text-dim text-lg leading-relaxed mb-10">
+            Beautiful invites. Calmer hosting. Free to start.
+          </p>
+          <Link
+            to="/signup"
+            className="inline-flex items-center gap-3 bg-primary text-ink font-mono font-semibold text-base px-10 py-4 rounded-full hover:bg-primary-dark hover:text-white transition-all duration-200 min-h-[52px] shadow-sm hover:shadow-md active:scale-[0.97]"
+          >
+            Create your first event
+            <span aria-hidden="true">→</span>
+          </Link>
+          <p className="font-mono text-xs text-dim mt-5">
+            No credit card. No setup. Just your event.
+          </p>
+        </div>
+      </div>
     </div>
   )
 }

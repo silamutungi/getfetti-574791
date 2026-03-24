@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabase'
 import { type User } from '@supabase/supabase-js'
 
 export default function Navbar() {
-  const [user, setUser] = useState<User | null>(null)
+  const [user,     setUser]     = useState<User | null>(null)
   const [menuOpen, setMenuOpen] = useState(false)
   const navigate = useNavigate()
 
@@ -12,6 +12,7 @@ export default function Navbar() {
     supabase.auth.getSession().then(({ data }) => setUser(data.session?.user ?? null))
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
       setUser(session?.user ?? null)
+      setMenuOpen(false)
     })
     return () => subscription.unsubscribe()
   }, [])
@@ -22,29 +23,114 @@ export default function Navbar() {
   }
 
   return (
-    <nav className="sticky top-0 z-50 bg-ink text-paper px-6 py-4 flex items-center justify-between">
-      <Link to="/" className="font-serif text-2xl font-bold tracking-tight text-primary focus:outline-none focus:ring-2 focus:ring-primary rounded">Getfetti</Link>
-      <button
-        className="md:hidden min-h-[44px] min-w-[44px] flex items-center justify-center text-paper focus:outline-none focus:ring-2 focus:ring-primary rounded"
-        onClick={() => setMenuOpen(!menuOpen)}
-        aria-label="Toggle menu"
-      >
-        <span className="text-xl">{menuOpen ? '✕' : '☰'}</span>
-      </button>
-      <div className={`${menuOpen ? 'flex' : 'hidden'} md:flex flex-col md:flex-row absolute md:relative top-full left-0 right-0 md:top-auto bg-ink md:bg-transparent p-6 md:p-0 gap-4 md:gap-6 md:items-center`}>
-        {user ? (
-          <>
-            <Link to="/dashboard" className="text-paper hover:text-primary transition-colors font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary rounded">My Events</Link>
-            <span className="text-dim text-sm hidden md:block">{user.email}</span>
-            <button onClick={handleLogout} className="bg-primary text-ink font-mono font-medium px-5 py-2 rounded-full hover:bg-primary-dark transition-colors min-h-[44px] text-sm focus:outline-none focus:ring-2 focus:ring-primary">Sign out</button>
-          </>
-        ) : (
-          <>
-            <Link to="/login" className="text-paper hover:text-primary transition-colors font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary rounded">Log in</Link>
-            <Link to="/signup" className="bg-primary text-ink font-mono font-medium px-5 py-2 rounded-full hover:bg-primary-dark transition-colors min-h-[44px] text-sm flex items-center focus:outline-none focus:ring-2 focus:ring-primary">Host an event</Link>
-          </>
-        )}
+    <nav
+      className="sticky top-0 z-50 bg-ink border-b border-white/8 px-6"
+      style={{ backdropFilter: 'blur(8px)' }}
+    >
+      <div className="max-w-5xl mx-auto flex items-center justify-between h-16">
+        {/* Logo */}
+        <Link
+          to="/"
+          className="font-serif text-2xl font-bold text-primary tracking-tight focus-visible:outline-none hover:text-primary/85 transition-colors"
+          onClick={() => setMenuOpen(false)}
+        >
+          Getfetti
+        </Link>
+
+        {/* Mobile hamburger */}
+        <button
+          type="button"
+          className="md:hidden w-11 h-11 flex items-center justify-center text-paper rounded-xl hover:bg-white/8 transition-colors focus-visible:outline-none"
+          onClick={() => setMenuOpen(o => !o)}
+          aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+          aria-expanded={menuOpen}
+        >
+          <span className="font-mono text-lg leading-none select-none" aria-hidden="true">
+            {menuOpen ? '✕' : '☰'}
+          </span>
+        </button>
+
+        {/* Desktop nav */}
+        <div className="hidden md:flex items-center gap-5">
+          {user ? (
+            <>
+              <Link
+                to="/dashboard"
+                className="font-mono text-sm text-paper/75 hover:text-paper transition-colors focus-visible:outline-none"
+              >
+                My Events
+              </Link>
+              <span className="font-mono text-xs text-dim hidden lg:block truncate max-w-[180px]">
+                {user.email}
+              </span>
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="font-mono text-sm font-medium text-ink bg-primary px-5 py-2 rounded-full min-h-[38px] hover:bg-primary-dark transition-all duration-150 focus-visible:outline-none"
+              >
+                Sign out
+              </button>
+            </>
+          ) : (
+            <>
+              <Link
+                to="/login"
+                className="font-mono text-sm text-paper/75 hover:text-paper transition-colors focus-visible:outline-none"
+              >
+                Log in
+              </Link>
+              <Link
+                to="/signup"
+                className="font-mono text-sm font-semibold text-ink bg-primary px-5 py-2.5 rounded-full min-h-[40px] flex items-center hover:bg-primary-dark transition-all duration-150 focus-visible:outline-none shadow-sm"
+              >
+                Host an event
+              </Link>
+            </>
+          )}
+        </div>
       </div>
+
+      {/* Mobile menu */}
+      {menuOpen && (
+        <div className="md:hidden border-t border-white/8 py-5 flex flex-col gap-3 animate-slide-dn">
+          {user ? (
+            <>
+              <Link
+                to="/dashboard"
+                onClick={() => setMenuOpen(false)}
+                className="font-mono text-sm text-paper/80 hover:text-paper py-2 focus-visible:outline-none"
+              >
+                My Events
+              </Link>
+              <p className="font-mono text-xs text-dim truncate">{user.email}</p>
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="self-start font-mono text-sm font-medium text-ink bg-primary px-6 py-2.5 rounded-full min-h-[44px] hover:bg-primary-dark transition-all duration-150 mt-2"
+              >
+                Sign out
+              </button>
+            </>
+          ) : (
+            <>
+              <Link
+                to="/login"
+                onClick={() => setMenuOpen(false)}
+                className="font-mono text-sm text-paper/80 hover:text-paper py-2 focus-visible:outline-none"
+              >
+                Log in
+              </Link>
+              <Link
+                to="/signup"
+                onClick={() => setMenuOpen(false)}
+                className="self-start font-mono text-sm font-semibold text-ink bg-primary px-6 py-3 rounded-full min-h-[44px] hover:bg-primary-dark transition-all duration-150"
+              >
+                Host an event
+              </Link>
+            </>
+          )}
+        </div>
+      )}
     </nav>
   )
 }
