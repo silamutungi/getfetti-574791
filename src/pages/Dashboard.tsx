@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { type Event, type Rsvp, type HostBrief } from '../types/index'
 
@@ -34,6 +35,7 @@ export default function Dashboard() {
   const [form, setForm] = useState({ title: '', date: '', location: '', description: '', event_type: 'general' as Event['event_type'] })
   const [saving, setSaving] = useState(false)
   const [formError, setFormError] = useState('')
+  const [copiedId, setCopiedId] = useState<string | null>(null)
 
   const loadEvents = async () => {
     setLoading(true)
@@ -60,10 +62,10 @@ export default function Dashboard() {
     setRsvps(prev => ({ ...prev, [eventId]: data ?? [] }))
   }
 
-  useEffect(() => { loadEvents() }, [])
+  useEffect(() => { void loadEvents() }, [])
 
   useEffect(() => {
-    if (selected) loadRsvps(selected)
+    if (selected) void loadRsvps(selected)
   }, [selected])
 
   const handleCreate = async () => {
@@ -88,7 +90,14 @@ export default function Dashboard() {
     if (insertErr) { setFormError('Could not create your event. Please try again.'); return }
     setCreating(false)
     setForm({ title: '', date: '', location: '', description: '', event_type: 'general' })
-    loadEvents()
+    void loadEvents()
+  }
+
+  const copyEventLink = async (ev: Event) => {
+    const url = `${window.location.origin}/rsvp/${ev.slug}`
+    await navigator.clipboard.writeText(url)
+    setCopiedId(ev.id)
+    setTimeout(() => setCopiedId(null), 2000)
   }
 
   if (loading) {
@@ -103,7 +112,7 @@ export default function Dashboard() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4 px-6">
         <p className="text-red-600 font-mono text-sm">{error}</p>
-        <button onClick={loadEvents} className="bg-primary text-ink font-mono px-6 py-3 rounded-full min-h-[44px] hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary-dark">Try again</button>
+        <button onClick={() => { void loadEvents() }} className="bg-primary text-ink font-mono px-6 py-3 rounded-full min-h-[44px] hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary-dark">Try again</button>
       </div>
     )
   }
@@ -156,7 +165,7 @@ export default function Dashboard() {
           </div>
           {formError && <p role="alert" className="text-red-600 font-mono text-sm mt-4">{formError}</p>}
           <div className="flex gap-4 mt-6">
-            <button onClick={handleCreate} disabled={saving} className="bg-primary text-ink font-mono font-medium px-6 py-3 rounded-full min-h-[44px] hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary-dark disabled:opacity-60">
+            <button onClick={() => { void handleCreate() }} disabled={saving} className="bg-primary text-ink font-mono font-medium px-6 py-3 rounded-full min-h-[44px] hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary-dark disabled:opacity-60">
               {saving ? 'Creating...' : 'Create event'}
             </button>
             <button onClick={() => { setCreating(false); setFormError('') }} className="border-2 border-primary-dark text-primary-dark font-mono font-medium px-6 py-3 rounded-full min-h-[44px] hover:bg-ink hover:text-primary focus:outline-none focus:ring-2 focus:ring-primary-dark">
@@ -176,18 +185,36 @@ export default function Dashboard() {
 
       <div className="grid md:grid-cols-3 gap-6">
         {events.map(ev => (
-          <button
+          <div
             key={ev.id}
-            onClick={() => setSelected(selected === ev.id ? null : ev.id)}
-            className={`text-left rounded-2xl border p-6 transition-all focus:outline-none focus:ring-2 focus:ring-primary ${
+            className={`text-left rounded-2xl border p-6 transition-all ${
               selected === ev.id ? 'border-primary bg-white shadow-md' : 'border-ink/10 bg-white hover:shadow-sm'
             }`}
           >
-            <span className="font-mono text-xs text-dim uppercase tracking-widest">{ev.event_type}</span>
-            <h3 className="font-serif text-xl font-bold text-ink mt-1 mb-2">{ev.title}</h3>
-            <p className="font-mono text-sm text-dim">{new Date(ev.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}</p>
-            <p className="font-mono text-sm text-dim mt-1">{ev.location}</p>
-          </button>
+            <button
+              onClick={() => setSelected(selected === ev.id ? null : ev.id)}
+              className="w-full text-left focus:outline-none focus:ring-2 focus:ring-primary rounded-xl"
+            >
+              <span className="font-mono text-xs text-dim uppercase tracking-widest">{ev.event_type}</span>
+              <h3 className="font-serif text-xl font-bold text-ink mt-1 mb-2">{ev.title}</h3>
+              <p className="font-mono text-sm text-dim">{new Date(ev.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}</p>
+              <p className="font-mono text-sm text-dim mt-1">{ev.location}</p>
+            </button>
+            <div className="flex gap-3 mt-4 pt-4 border-t border-ink/10">
+              <Link
+                to={`/events/${ev.id}`}
+                className="flex-1 text-center bg-ink text-primary font-mono text-xs font-medium px-3 py-2 rounded-full min-h-[36px] flex items-center justify-center hover:bg-ink/80 focus:outline-none focus:ring-2 focus:ring-primary"
+              >
+                Manage &rarr;
+              </Link>
+              <button
+                onClick={() => { void copyEventLink(ev) }}
+                className="flex-1 text-center border border-ink/20 text-ink font-mono text-xs font-medium px-3 py-2 rounded-full min-h-[36px] hover:bg-ink/5 focus:outline-none focus:ring-2 focus:ring-primary"
+              >
+                {copiedId === ev.id ? 'Copied!' : 'Share link'}
+              </button>
+            </div>
+          </div>
         ))}
       </div>
 
