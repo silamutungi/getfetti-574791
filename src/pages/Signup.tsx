@@ -18,7 +18,7 @@ export default function Signup() {
     const { error: authError } = await supabase.auth.signUp({ email, password })
     setLoading(false)
     if (authError) {
-      setError('Something went wrong creating your account. Try again or use a different email.')
+      setError(authError.message)
     } else {
       navigate('/dashboard')
     }
